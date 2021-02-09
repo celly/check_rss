@@ -34,7 +34,49 @@ import feedparser
 import argparse
 import sys
 import datetime
+import math
 
+from io import StringIO
+from html.parser import HTMLParser
+
+'''
+    Start: https://stackoverflow.com/questions/11061058/using-htmlparser-in-python-3-2
+'''
+class MLStripper(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return " ".join(s.get_data().split())
+
+'''
+    End: https://stackoverflow.com/questions/11061058/using-htmlparser-in-python-3-2
+'''
+
+''' 
+    Start: https://stackoverflow.com/questions/4048651/python-function-to-convert-seconds-into-minutes-hours-and-days/4048773
+''' 
+def secondsToText(secs):
+    days = secs//86400
+    hours = (secs - days*86400)//3600
+    minutes = (secs - days*86400 - hours*3600)//60
+    seconds = secs - days*86400 - hours*3600 - minutes*60
+    result = ("{0} day{1}, ".format(days, "s" if days!=1 else "") if days else "") + \
+    ("{0} hour{1}, ".format(hours, "s" if hours!=1 else "") if hours else "") + \
+    ("{0} minute{1}, ".format(minutes, "s" if minutes!=1 else "") if minutes else "") + \
+    ("{0} second{1} ".format(seconds, "s" if seconds!=1 else "") if seconds else "")
+    return result
+'''
+    https://stackoverflow.com/questions/4048651/python-function-to-convert-seconds-into-minutes-hours-and-days/4048773
+'''
 
 def fetch_feed_last_entry(feed_url):
     '''Fetch a feed from a given string'''
@@ -140,18 +182,22 @@ def main(argv=None):
 
 
     # Get the difference in time from last post
-    datetime_now = datetime.datetime.now()
+    datetime_now = datetime.datetime.utcnow()
     datetime_feeddate = datetime.datetime(*feeddate[:6]) #http://stackoverflow.com/a/1697838/726716
     timediff = datetime_now - datetime_feeddate
-    hourssinceposted = timediff.days * 24 + timediff.seconds / 3600
-
+    nice_time = secondsToText(math.floor(timediff.seconds))
+    hourssinceposted = timediff.seconds/3600
+    
     # We will form our response here based on the verbosity levels. This makes the logic below a lot easier.
     if (args.verbosity == '0'):
-        output = 'Posted %s hrs ago ; %s' % (hourssinceposted, title)
+        output = 'Alert Age %s \r\n%s' % (nice_time, title)
     elif (args.verbosity == '1'):
-        output = 'Posted %s hrs ago ; Title: %s; Link: %s' % (hourssinceposted, title, link)
+        output = 'Alert Age %s \r\nTitle: %s \r\nLink: %s' % (nice_time, title, link)
     elif (args.verbosity == '2'):
-        output = 'Posted %s hrs ago ; Title: %s ; Description: %s ; Link: %s' % (hourssinceposted, title, description, link)
+        output = 'Alert Age %s \r\nTitle: %s \r\nDescription: %s \r\nLink: %s' % (nice_time, title, description, link)
+
+    # Remove Random HTML Tags
+    output = strip_tags(output)
 
     # Check for strings that match, resulting in critical status
     if (args.criticalif):
