@@ -191,11 +191,11 @@ def main(argv=None):
     
     # We will form our response here based on the verbosity levels. This makes the logic below a lot easier.
     if (args.verbosity == '0'):
-        output = 'Alert Age %s \r\n\r\n%s' % (nice_time, title)
+        output = 'Alert Age: %s \r\n%s' % (nice_time, title)
     elif (args.verbosity == '1'):
-        output = 'Alert Age %s \r\n\r\nTitle: %s \r\n\r\nLink: %s' % (nice_time, title, link)
+        output = 'Alert Age: %s \r\nTitle: %s \r\nLink: %s' % (nice_time, title, link)
     elif (args.verbosity == '2'):
-        output = 'Alert Age %s \r\n\r\nTitle: %s \r\n\r\nDescription: %s \r\n\r\nLink: %s' % (nice_time, title, description, link)
+        output = 'Alert Age: %s \r\nTitle: %s \r\nDescription: %s \r\nLink: %s' % (nice_time, title, description, link)
 
     # Remove Random HTML Tags
     output = strip_tags(output)
