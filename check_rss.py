@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 check_rss - A simple Nagios plugin to check an RSS feed.
@@ -42,18 +42,17 @@ def fetch_feed_last_entry(feed_url):
     try:
         myfeed = feedparser.parse(feed_url)
     except:
-        output = 'Could not parse URL (%s)' % feed_url
-        exitcritical(output, '')
+        exitcritical(("Could not parse feed: ", feed_url), '')
 
     if myfeed.bozo != 0:
-        exitcritical('Malformed feed: %s' % (myfeed.bozo_exception), '')
+        exitcritical(("Malformed feed: ", myfeed.bozo_exception), '')
     if (myfeed.status != 200):
-        exitcritical('Status %s - %s' % (myfeed.status, myfeed.feed.summary), '')
+        exitcritical(("Non 200 Status: ", myfeed.status), '')
 
     # feed with 0 entries are good too
-    if (len(myfeed.entries) == 0): 
-        exitok('No news == good news', '') 
-    
+    if (len(myfeed.entries) == 0):
+        exitok('No news == good news', '')
+
     return myfeed.entries[0]
 
 
@@ -132,7 +131,7 @@ def main(argv=None):
     if (rssfeed.find('http://') != 0 and rssfeed.find('https://') != 0):
         rssfeed = 'http://{rssfeed}'.format(rssfeed=rssfeed)
 
-    # we have everything we need, let's start 
+    # we have everything we need, let's start
     last_entry = fetch_feed_last_entry(rssfeed)
     feeddate = last_entry['updated_parsed']
     title = last_entry['title']
@@ -210,25 +209,25 @@ def main(argv=None):
 
 def exitok(output, perfdata):
     if (perfdata):
-        print "OK - %s|'RSS'=0;1;2;0;2" % output
+        print ("OK - ", output, "|'RSS'=0;1;2;0;2")
     else:
-        print 'OK - %s' % output
+        print ("OK - ", output)
     sys.exit(0)
 
 
 def exitwarning(output, perfdata):
     if (perfdata):
-        print "WARNING - %s|'RSS'=1;1;2;0;2" % output
+        print ("WARNING - ", output, "|'RSS'=1;1;2;0;2")
     else:
-        print 'WARNING - %s' % output
+        print ("WARNING - ", output)
     sys.exit(1)
 
 
 def exitcritical(output, perfdata):
     if (perfdata):
-        print "CRITICAL - %s|'RSS'=2;1;2;0;2" % output
+        print ("CRITICAL - ", output, "|'RSS'=2;1;2;0;2")
     else:
-        print 'CRITICAL - %s' % output
+        print ("CRITICAL - ", output)
     sys.exit(2)
 
 
