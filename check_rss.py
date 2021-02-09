@@ -35,6 +35,7 @@ import argparse
 import sys
 import datetime
 import math
+import re
 
 from io import StringIO
 from html.parser import HTMLParser
@@ -55,7 +56,7 @@ class MLStripper(HTMLParser):
 def strip_tags(html):
     s = MLStripper()
     s.feed(html)
-    return " ".join(s.get_data().split())
+    return s.get_data()
 
 '''
     End: https://stackoverflow.com/questions/11061058/using-htmlparser-in-python-3-2
@@ -190,14 +191,15 @@ def main(argv=None):
     
     # We will form our response here based on the verbosity levels. This makes the logic below a lot easier.
     if (args.verbosity == '0'):
-        output = 'Alert Age %s \r\n%s' % (nice_time, title)
+        output = 'Alert Age %s \r\n\r\n%s' % (nice_time, title)
     elif (args.verbosity == '1'):
-        output = 'Alert Age %s \r\nTitle: %s \r\nLink: %s' % (nice_time, title, link)
+        output = 'Alert Age %s \r\n\r\nTitle: %s \r\n\r\nLink: %s' % (nice_time, title, link)
     elif (args.verbosity == '2'):
-        output = 'Alert Age %s \r\nTitle: %s \r\nDescription: %s \r\nLink: %s' % (nice_time, title, description, link)
+        output = 'Alert Age %s \r\n\r\nTitle: %s \r\n\r\nDescription: %s \r\n\r\nLink: %s' % (nice_time, title, description, link)
 
     # Remove Random HTML Tags
     output = strip_tags(output)
+    output = re.sub(' +', ' ', output);
 
     # Check for strings that match, resulting in critical status
     if (args.criticalif):
