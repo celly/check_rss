@@ -76,7 +76,7 @@ def secondsToText(secs):
     ("{0} second{1} ".format(seconds, "s" if seconds!=1 else "") if seconds else "")
     return result
 '''
-    https://stackoverflow.com/questions/4048651/python-function-to-convert-seconds-into-minutes-hours-and-days/4048773
+    End: https://stackoverflow.com/questions/4048651/python-function-to-convert-seconds-into-minutes-hours-and-days/4048773
 '''
 
 def fetch_feed_last_entry(feed_url):
@@ -225,7 +225,7 @@ def main(argv=None):
 
     # Check for time difference (in hours), resulting in critical status
     if (args.hours):
-        if (int(hourssinceposted) <= int(args.hours)):
+        if (int(hourssinceposted) < int(args.hours)):
             exitcritical(output, perfdata)
 
     # Check for strings that match, resulting in warning status
