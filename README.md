@@ -10,8 +10,7 @@ First version taken from http://john.wesorick.com/2011/10/nagios-plugin-checkrss
 
  - Support for empty feed
  - global clean up, pylint and pep8 almost silent
-
-
+ - python 3 support
 
 Usage 
 -----
