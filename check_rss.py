@@ -318,5 +318,5 @@ def exitunknown(output):
     sys.exit(3)
 
 if __name__ == '__main__':
-    result = main(sys.argv)
-    sys.exit(result)
+    main(sys.argv)
+    sys.exit()
