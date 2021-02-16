@@ -94,7 +94,7 @@ def fetch_feed_last_entry(feed_url):
 
     # feed with 0 entries are good too
     if (len(myfeed.entries) == 0):
-        exitok('No news == good news', '')
+        exitokay('No news == good news', '')
 
     return myfeed.entries[0]
 
