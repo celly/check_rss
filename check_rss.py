@@ -136,6 +136,19 @@ def main(argv=None):
                          help='warning condition if MISSING',
                          action='store')
 
+    parser.add_argument('-o', '--okayif', dest='okayif',
+                         help='okay condition if PRESENT',
+                         action='store')
+
+    parser.add_argument('-O', '--okaynot', dest='okaynot',
+                         help='okay condition if not PRESENT',
+                         action='store')
+
+    parser.add_argument('-P', '--prehours', dest='prehours',
+                         help='Hours since last post (Run before if/ifnot)'
+                         'Will return critical if less than designated amount.',
+                         action='store')
+
     parser.add_argument('-T', '--hours', dest='hours',
                          help='Hours since last post. '
                          'Will return critical if less than designated amount.',
@@ -181,7 +194,6 @@ def main(argv=None):
     description = last_entry['description']
     link = last_entry['link']
 
-
     # Get the difference in time from last post
     datetime_now = datetime.datetime.utcnow()
     datetime_feeddate = datetime.datetime(*feeddate[:6]) #http://stackoverflow.com/a/1697838/726716
@@ -200,6 +212,11 @@ def main(argv=None):
     # Remove Random HTML Tags
     output = strip_tags(output)
     output = re.sub(' +', ' ', output);
+
+    # Check for time difference (in hours), resulting in critical status
+    if (args.prehours):
+        if (int(hourssinceposted) < int(args.prehours)):
+            exitcritical(output, perfdata)
 
     # Check for strings that match, resulting in critical status
     if (args.criticalif):
@@ -223,11 +240,6 @@ def main(argv=None):
                 if (title.lower().find(search) == -1 and description.lower().find(search) == -1):
                     exitcritical(output, perfdata)
 
-    # Check for time difference (in hours), resulting in critical status
-    if (args.hours):
-        if (int(hourssinceposted) < int(args.hours)):
-            exitcritical(output, perfdata)
-
     # Check for strings that match, resulting in warning status
     if (args.warningif):
         warningif = args.warningif.lower().split(',')
@@ -247,21 +259,45 @@ def main(argv=None):
                 if (title.lower().find(search) == -1):
                     exitwarning(output, perfdata)
             else:
-
                 if (title.lower().find(search) == -1 and description.lower().find(search) == -1):
                     exitwarning(output, perfdata)
 
+    # Check for strings that match, resulting in okay status
+    if (args.okayif):
+        okayif = args.okayif.lower().split(',')
+        for search in okayif:
+            if (args.titleonly):
+                if (title.lower().find(search) >= 0):
+                    exitokay(output, perfdata)
+            else:
+                if (title.lower().find(search) >= 0 or description.lower().find(search) >= 0):
+                    exitokay(output, perfdata)
+
+    # Check for strings that are missing, resulting in warning status
+    if (args.okaynot):
+        okaynot = args.okaynot.lower().split(',')
+        for search in okaynot:
+            if (args.titleonly):
+                if (title.lower().find(search) == -1):
+                    exitokay(output, perfdata)
+            else:
+                if (title.lower().find(search) == -1 and description.lower().find(search) == -1):
+                    exitokay(output, perfdata)
+
+    # Check for time difference (in hours), resulting in critical status
+    if (args.hours):
+        if (int(hourssinceposted) < int(args.hours)):
+            exitcritical(output, perfdata)
+
     # If we made it this far, we must be ok
-    exitok(output, perfdata)
+    exitokay(output, perfdata)
 
-
-def exitok(output, perfdata):
+def exitokay(output, perfdata):
     if (perfdata):
-        print ("OK - ", output, "|'RSS'=0;1;2;0;2")
+        print ("OKAY - ", output, "|'RSS'=0;1;2;0;2")
     else:
-        print ("OK - ", output)
+        print ("OKAY - ", output)
     sys.exit(0)
-
 
 def exitwarning(output, perfdata):
     if (perfdata):
@@ -277,7 +313,6 @@ def exitcritical(output, perfdata):
     else:
         print ("CRITICAL - ", output)
     sys.exit(2)
-
 
 def exitunknown(output):
     sys.exit(3)
